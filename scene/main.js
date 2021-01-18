@@ -7,10 +7,8 @@
  * @FilePath: \pal\scene\main.js
  */
 import * as THREE from '../build/three.module.js';
-import { Sky } from '../objs/Sky.js';
-import { Water } from '../objs/Water.js';
 import { OrbitControls } from '../utils/OrbitControls.js';
-var controls,water, sun, mesh;
+var controls,water, sun, mesh,floor;
 var scene,renderer,mainCarema;
 function init(){
     const container = document.querySelector('#game');
@@ -20,56 +18,50 @@ function init(){
     container.appendChild( renderer.domElement );
     scene = new THREE.Scene();
     mainCarema = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 1, 20000 );
-    scene.background = new THREE.Color(0x000000);
-    createSky();
+    scene.background = new THREE.Color(0x67A7B4);
+    addfloor();
+    //createSky();
+    createLight();
     render();
     createControls();
     animate();
     window.addEventListener( 'resize', onWindowResize, false );
 }
 init();
-//天空
-function createSky(){
-    const sky = new Sky();
-    sky.scale.setScalar( 10000 );
-    scene.add( sky );
-    const skyUniforms = sky.material.uniforms;
-
-    skyUniforms[ 'turbidity' ].value = 10;
-    skyUniforms[ 'rayleigh' ].value = 2;
-    skyUniforms[ 'mieCoefficient' ].value = 0.005;
-    skyUniforms[ 'mieDirectionalG' ].value = 0.8;
-
-    const parameters = {
-        inclination: 0.49,
-        azimuth: 0.205
-    };
-
-    const pmremGenerator = new THREE.PMREMGenerator( renderer );
-    sun = new THREE.Vector3();
-    updateSun(sun,sky,parameters,pmremGenerator);
-}
-function updateSun(sun,sky,parameters,pmremGenerator) {
-    const theta = Math.PI * ( parameters.inclination - 0.5 );
-    const phi = 2 * Math.PI * ( parameters.azimuth - 0.5 );
-    sun.x = Math.cos( phi );
-    sun.y = Math.sin( phi ) * Math.sin( theta );
-    sun.z = Math.sin( phi ) * Math.cos( theta );
-
-    sky.material.uniforms[ 'sunPosition' ].value.copy( sun );
-    //water.material.uniforms[ 'sunDirection' ].value.copy( sun ).normalize();
-
-    scene.environment = pmremGenerator.fromScene( sky ).texture;
-
+// Lights
+function createLight(){
+    const directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+    //const pointLight = new THREE.PointLight( 0xffffff, 2, 1000);
+    // particleLight = new THREE.Mesh(
+    //     new THREE.SphereBufferGeometry( 4, 8, 8 ),
+    //     new THREE.MeshBasicMaterial( { color: 0xffffff } )
+    // );
+    scene.add( directionalLight );
 }
 
+//添加地面
+function addfloor(){
+    const boxWidth = 10000;
+    const boxHeight = 10;
+    const boxDepth = 10000;
+    //创建一个几何体（box） 作为地面
+    const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
+    //创建材质
+    const material = new THREE.MeshToonMaterial( { color:0xCF9E73 } );
+    //创建一个网格
+    const floor = new THREE.Mesh(geometry, material);
+    
+    //把网格加入到场景
+    scene.add(floor);
+
+}
 
 function createControls(){
     controls = new OrbitControls( mainCarema, renderer.domElement );
     controls.maxPolarAngle = Math.PI * 0.495;
-    controls.target.set( 0, 10, 0 );
-    controls.minDistance = 40.0;
-    controls.maxDistance = 200.0;
+    controls.target.set( 0, 100, 0 );
+    // controls.minDistance = 40.0;
+    // controls.maxDistance = 200.0;
     controls.update();
 }
 
