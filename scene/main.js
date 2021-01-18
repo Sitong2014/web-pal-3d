@@ -1,7 +1,7 @@
 /*
  * @Author: MD.Ghost
  * @Date: 2021-01-10 15:26:29
- * @LastEditTime: 2021-01-10 18:51:25
+ * @LastEditTime: 2021-01-18 23:18:43
  * @LastEditors: Please set LastEditors
  * @Description: first scene 开场动画场景
  * @FilePath: \pal\scene\main.js
@@ -87,17 +87,54 @@ function createTank(){
     //tank身体
     const tankBody = new THREE.Object3D();
     const tank_material = new THREE.MeshToonMaterial( { color:0x37896D  } );
+    const tank_wheel_material = new THREE.MeshToonMaterial( { color:0x07170C  } );
     tank.add(tankBody);
     //tank上立方体部分
-    const tankBox_top_geometry = new THREE.CylinderGeometry( 30,50,20,8 );
+    const carWidth = 100;
+    const carHeight = 20;
+    const carLength = 150;
+    const tankBox_top_geometry = new THREE.CylinderGeometry(20,40,20,12);
     const tankBox_top =new THREE.Mesh(tankBox_top_geometry, tank_material);
-    tankBox_top.position.set(0,60,0)
+    tankBox_top.position.set(0,45,0)
     tankBody.add(tankBox_top);
     //tank下立方体部分
-    const tankBox_main_geometry = new THREE.BoxGeometry(100,60,120);
+    const tankBox_main_geometry = new THREE.BoxGeometry(carWidth,carHeight,carLength);
     const tankBox_main =new THREE.Mesh(tankBox_main_geometry, tank_material);
-    tankBox_main.position.set(0,0,0)
-    tankBody.add(tankBox_main); 
+    tankBox_main.position.set(0,25,0)
+    tankBody.add(tankBox_main);
+    //tank六个轮子
+    const wheelRadius = 12;
+    const wheelThickness = 5;
+    const wheelSegments = 12;
+    const wheelGeometry = new THREE.CylinderBufferGeometry(
+        wheelRadius,     // top radius
+        wheelRadius,     // bottom radius
+        wheelThickness,  // height of cylinder
+        wheelSegments);
+    const wheelPositions = [
+        [-carWidth / 2 - wheelThickness / 2 , -carHeight / 2 + 30,  carLength / 3],
+        [ carWidth / 2 + wheelThickness / 2 , -carHeight / 2 + 30,  carLength / 3],
+        [-carWidth / 2 - wheelThickness / 2, -carHeight / 2 + 30, 0],
+        [ carWidth / 2 + wheelThickness / 2, -carHeight / 2 + 30, 0],
+        [-carWidth / 2 - wheelThickness / 2, -carHeight / 2 + 30, -carLength / 3],
+        [ carWidth / 2 + wheelThickness / 2, -carHeight / 2 + 30, -carLength / 3],
+    ];
+    const wheelMeshes = wheelPositions.map((position) => {
+        const mesh = new THREE.Mesh(wheelGeometry, tank_wheel_material);
+        mesh.position.set(...position);
+        mesh.rotation.z = Math.PI * .5;
+        mesh.castShadow = true;
+        tankBody.add(mesh);
+        return mesh;
+    });
+    //炮筒
+    const turret_geometry = new THREE.CylinderGeometry(3,3,120,12);
+    const turret = new THREE.Mesh(turret_geometry, tank_material);
+    const turret_angle =  2/5*Math.PI;
+    turret.position.set(0,65,4/5*carWidth);
+    turret.rotation.x = turret_angle;
+    tankBody.add(turret);
+    
 }
 // function render(time) {
 //     time *= 0.001;  // 将时间单位变为秒
