@@ -21,6 +21,7 @@ function init(){
     scene.background = new THREE.Color(0x67A7B4);
     addfloor();
     //createSky();
+    createTank();
     createLight();
     render();
     createControls();
@@ -78,6 +79,25 @@ function animate() {
     render();
     //stats.update();
 
+}
+function createTank(){
+    //创建一个tank对象
+    const tank = new THREE.Object3D();
+    scene.add(tank);
+    //tank身体
+    const tankBody = new THREE.Object3D();
+    const tank_material = new THREE.MeshToonMaterial( { color:0x37896D  } );
+    tank.add(tankBody);
+    //tank上立方体部分
+    const tankBox_top_geometry = new THREE.CylinderGeometry( 30,50,20,8 );
+    const tankBox_top =new THREE.Mesh(tankBox_top_geometry, tank_material);
+    tankBox_top.position.set(0,60,0)
+    tankBody.add(tankBox_top);
+    //tank下立方体部分
+    const tankBox_main_geometry = new THREE.BoxGeometry(100,60,120);
+    const tankBox_main =new THREE.Mesh(tankBox_main_geometry, tank_material);
+    tankBox_main.position.set(0,0,0)
+    tankBody.add(tankBox_main); 
 }
 // function render(time) {
 //     time *= 0.001;  // 将时间单位变为秒
