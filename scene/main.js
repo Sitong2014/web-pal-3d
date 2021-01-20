@@ -8,7 +8,7 @@
  */
 import * as THREE from '../build/three.module.js';
 import { OrbitControls } from '../utils/OrbitControls.js';
-var controls,water, sun, mesh,floor;
+var controls,water, sun, mesh,floor,wheelMeshes = [];
 var scene,renderer,mainCarema;
 function init(){
     const container = document.querySelector('#game');
@@ -74,9 +74,11 @@ function onWindowResize() {
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.render( scene, mainCarema );
 }
-function animate() {
+function animate(time) {
+    time *= 0.001;  // 将时间单位变为秒
     requestAnimationFrame( animate );
     render();
+    tankStartCircle(time,false);
     //stats.update();
 
 }
@@ -105,7 +107,7 @@ function createTank(){
     //tank六个轮子
     const wheelRadius = 12;
     const wheelThickness = 5;
-    const wheelSegments = 12;
+    const wheelSegments = 8;
     const wheelGeometry = new THREE.CylinderBufferGeometry(
         wheelRadius,     // top radius
         wheelRadius,     // bottom radius
@@ -119,7 +121,7 @@ function createTank(){
         [-carWidth / 2 - wheelThickness / 2, -carHeight / 2 + 30, -carLength / 3],
         [ carWidth / 2 + wheelThickness / 2, -carHeight / 2 + 30, -carLength / 3],
     ];
-    const wheelMeshes = wheelPositions.map((position) => {
+    wheelMeshes = wheelPositions.map((position) => {
         const mesh = new THREE.Mesh(wheelGeometry, tank_wheel_material);
         mesh.position.set(...position);
         mesh.rotation.z = Math.PI * .5;
@@ -130,11 +132,41 @@ function createTank(){
     //炮筒
     const turret_geometry = new THREE.CylinderGeometry(3,3,120,12);
     const turret = new THREE.Mesh(turret_geometry, tank_material);
-    const turret_angle =  2/5*Math.PI;
+    const turret_angle =  0.4*Math.PI;
     turret.position.set(0,65,4/5*carWidth);
     turret.rotation.x = turret_angle;
     tankBody.add(turret);
+    tankBehavior(tank);
+}
+function tankStartCircle(time,flag){
+    if(flag){
+        wheelMeshes.forEach((obj) => {
+            obj.rotation.x = time * 3;
+        });
+    }else{
+        wheelMeshes.forEach((obj) => {
+            obj.rotation.x = time * 0;
+        });
+    }
     
+}
+function tankBehavior(tank){
+    document.onkeydown = function(event) {
+        var e = event || window.event || arguments.callee.caller.arguments[0];
+        if (e && e.keyCode == 87) { //W键 前进
+            tank.position.z =  tank.position.z + 5;
+        }
+        if (e && e.keyCode == 83) { //S键 后退
+            tank.position.z =  tank.position.z - 5;
+        }
+        if (e && e.keyCode == 65) { //W键 前进
+            tank.rotation.y += 1/120*Math.PI;
+        }
+        if (e && e.keyCode == 68) { //W键 前进
+            tank.rotation.y -= 1/120*Math.PI;
+        }
+
+    };
 }
 // function render(time) {
 //     time *= 0.001;  // 将时间单位变为秒
@@ -143,17 +175,16 @@ function createTank(){
 // }
 // requestAnimationFrame(render);
 function render() {
-
     //const time = performance.now() * 0.001;
-
+    //time *= 0.001;  // 将时间单位变为秒
     // mesh.position.y = Math.sin( time ) * 20 + 5;
     // mesh.rotation.x = time * 0.5;
     // mesh.rotation.z = time * 0.51;
-
+    
     //water.material.uniforms[ 'time' ].value += 1.0 / 60.0;
-
     renderer.render( scene, mainCarema );
-
+    //requestAnimationFrame(render);
 }
+//requestAnimationFrame(render);
 
 export default scene;
